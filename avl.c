@@ -2,11 +2,12 @@
 #include <stdlib.h>
 typedef struct no{
     int dado;
+    int alt;
     struct no *esq, *dir;
 
 }No;
 
-void inserir(No **, int);
+//void inserir(No **, int);
 void inserir_avl(No **, int);
 void pre_ordem(No **);
 void em_ordem(No **);
@@ -23,6 +24,8 @@ void rde(No **);
 void rdd(No **);
 int fat_bal(No **);
 void correcao(No **);
+int max(No **, No **);
+//--------------------------------------//
 int main(){
     menu();
 }
@@ -34,14 +37,14 @@ void menu(){
     int *aux;
 
     inserir_avl(&r, 10);
-    inserir_avl(&r, 5);
-    inserir_avl(&r, 3);
+    inserir_avl(&r, 15);
     inserir_avl(&r, 20);
+    /* inserir_avl(&r, 20);
     inserir_avl(&r, 23);
     inserir_avl(&r, 70);
     inserir_avl(&r, 80);
     inserir_avl(&r, 55);
-    inserir_avl(&r, 72);
+    inserir_avl(&r, 72); */
     
 
 
@@ -56,6 +59,7 @@ void inserir_avl(No **raiz, int vlr){
         No *novo;
         novo = (No *)malloc(sizeof(No));
         novo->dado = vlr;
+        novo->alt = 0;
         novo->esq = NULL;
         novo->dir = NULL;
 
@@ -66,7 +70,8 @@ void inserir_avl(No **raiz, int vlr){
         }else{
             inserir_avl(&(*raiz)->esq,vlr);
         }
-        correcao(raiz);
+        (*raiz)->alt = 1 + max(&(*raiz)->esq, &(*raiz)->dir);
+		correcao(raiz);
     }
 }
 void rse(No **r){
@@ -80,8 +85,10 @@ função para a rotação à esquerda*/
     printf("RSE(%i)\n",(*r)->dado);
     s = (*r)->dir; 
     (*r)->dir = s->esq;
+    (*r)->alt = 1 + max(&(*r)->esq, &(*r)->dir); //atualizando a altura
     s->esq = *r;
     *r = s;
+    (*r)->alt = 1 + max(&(*r)->esq, &(*r)->dir); //atualizando a altura
 
 
 }
@@ -97,8 +104,10 @@ função para a rotação à direita*/
     printf("RSD(%i)\n",(*r)->dado);
     s = (*r)->esq; 
     (*r)->esq = s->dir;
+    (*r)->alt = 1 + max(&(*r)->esq, &(*r)->dir); //atualizando a altura
     s->dir = *r;
     *r = s;
+    (*r)->alt = 1 + max(&(*r)->esq, &(*r)->dir); //atualizando a altura
 
 }
 void rde(No **r){
@@ -129,7 +138,7 @@ void correcao(No **r){
         }
     }
 }
-void inserir(No **raiz, int vlr){
+/*void inserir(No **raiz, int vlr){
     
     if(*raiz == NULL){
         No *novo;
@@ -146,11 +155,11 @@ void inserir(No **raiz, int vlr){
             inserir(&(*raiz)->esq,vlr);
         }
     }
-}
+}*/
 
 void pre_ordem(No **r){
     if(*r != NULL){
-        printf("%i ",(*r)->dado);
+        printf("%i (alt:%i)",(*r)->dado, (*r)->alt);
         pre_ordem(&(*r)->esq);
         pre_ordem(&(*r)->dir);
     }
@@ -209,12 +218,42 @@ int * maior_rec(No **r){
 int altura(No **r){
     if(*r == NULL)
         return -1;
-    if (((*r)->esq == NULL) && ((*r)->dir == NULL)) 
+    /*if (((*r)->esq == NULL) && ((*r)->dir == NULL)) 
         return 0;
     int esq = altura(&(*r)->esq);
     int dir = altura(&(*r)->dir);
     if( esq > dir)
         return 1 + esq;
     else
-        return 1 + dir;
+        return 1 + dir;*/
+    return (*r)->alt;
+}
+int max(No **r1, No **r2){
+	if ((*r1 == NULL) && (*r2 == NULL ))
+		return -1;
+	if (*r1 == NULL)
+		return (*r2)->alt;
+	if (*r2 == NULL)
+		return (*r1)->alt;
+	if ((*r1)->alt > (*r2)->alt)
+		return (*r1)->alt;
+	return (*r2)->alt;
+}
+int remover_maior(No **r){
+	
+	if (*r == NULL)
+		return 0;
+	
+	No *p, *q;
+	q = NULL;
+	for (p=*r; p->dir!=NULL; p=p->dir){
+		q = p;
+	}
+	if (q == NULL){ // Remoção do nó raiz
+		*r = p->esq;
+	}else{
+		q->dir = p->esq;
+	}
+	free(p);
+	return 1;	
 }
